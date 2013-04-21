@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>kiranryali</string>
+	<key>connections</key>
+	<dict/>
+	<key>createdby</key>
+	<string>Kiran Ryali</string>
+	<key>description</key>
+	<string>github search</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Github</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>escaping</key>
+				<integer>127</integer>
+				<key>keyword</key>
+				<string>git</string>
+				<key>runningsubtext</key>
+				<string>loading</string>
+				<key>script</key>
+				<string>source ~/.bash_profile
+ruby github_search.rb {query}</string>
+				<key>subtext</key>
+				<string>github</string>
+				<key>title</key>
+				<string>Github</string>
+				<key>type</key>
+				<integer>5</integer>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>135DA15D-D4A7-46A4-A31E-E63A885AFE63</string>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string></string>
+	<key>uidata</key>
+	<dict>
+		<key>135DA15D-D4A7-46A4-A31E-E63A885AFE63</key>
+		<dict>
+			<key>ypos</key>
+			<real>20</real>
+		</dict>
+	</dict>
+	<key>webaddress</key>
+	<string>kryali.com</string>
+</dict>
+</plist>
