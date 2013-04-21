@@ -9,8 +9,9 @@ require "json"
 
 HOST = "https://git.squareup.com"
 API_PATH = "/api/v3/"
-REPOS_FILE = "repos.json"
-GITHUB_ICON = "github_32.png"
+REPOS_FILE = "repos.bin"
+GITHUB_ICON = {:type => "default", :name => "github_32.png"}
+THREADS = []
 
 class Cache
   DATA_DIR = File.expand_path(File.dirname(__FILE__), "data")
@@ -19,12 +20,24 @@ class Cache
     "#{DATA_DIR}/#{name}"
   end
 
+  def self.deserialize(data)
+    Marshal.load(data)
+  end
+
+  def self.serialize(data)
+    Marshal.dump(data)
+  end
+
   def self.get(name)
     return nil unless File.exists? path(name)
     file = File.open(path(name), "r")
+    start_time = Time.now
     contents = file.read
     file.close
-    Marshal.load(contents)
+    data = deserialize(contents)
+    end_time = Time.now
+    LOGGER.debug "cache read time #{(end_time - start_time) * 1000}ms"
+    data
   end
 
   def self.put(name, data)
@@ -33,7 +46,7 @@ class Cache
       :data => data
     }
     file = File.new(path(name), "w+")
-    file.write(Marshal.dump(saved))
+    file.write(serialize(saved))
     file.close
   end
 end
@@ -67,10 +80,11 @@ class GetReposJob
     return data unless get_all
 
     while next_link = get_next_link(response)
-      puts "fetching #{next_link}.."
+      LOGGER.debug "fetching #{next_link}.."
       response = get(http, clean_up_link(next_link))
       data = data + JSON.parse(response.body)
     end
+    LOGGER.debug "done fetching"
     data
   end
 
@@ -89,9 +103,10 @@ class GetReposJob
     if cache
       if (Time.now.to_i - cache[:created_at]) > 300 # 5 minute
         LOGGER.debug "Busting cache, its too old!"
-        Thread.new{ fetch_and_save(get_all) }
+        THREADS << Thread.new{ 
+          fetch_and_save(get_all) 
+        }
       end
-      LOGGER.debug "Hit cache"
       return cache[:data]
     end
     LOGGER.debug "No cache, slow fetch"
@@ -103,15 +118,15 @@ query = ARGV.first.strip
 
 Alfred.with_friendly_error do |alfred|
   alfred.with_rescue_feedback = true
-  repos = GetReposJob.perform(false)
+  repos = GetReposJob.perform(true)
   feedback = alfred.feedback
   repos.each do |repo|
     if repo["name"].include?(query) or repo["full_name"].include?(query) 
       feedback.add_item({
-            :uid      => repo["name"],
-            :title    => repo["name"],
-            :subtitle => repo["full_name"],
-            :arg      => repo["name"],
+            :uid      => repo["full_name"],
+            :title    => repo["full_name"],
+            :subtitle => repo["description"],
+            :arg      => repo["html_url"],
             :valid    => true,
             :icon     => GITHUB_ICON
           })
